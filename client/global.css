@@ -1,0 +1,33 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer components {
+  .screen-container {
+    @apply flex-1 bg-background;
+  }
+  
+  .input-field {
+    @apply bg-gray-100 p-4 rounded-lg text-gray-800;
+  }
+
+  .btn-primary {
+    @apply bg-primary py-3 rounded-lg items-center justify-center;
+  }
+
+  .btn-secondary {
+    @apply bg-white border border-primary py-3 rounded-lg items-center justify-center;
+  }
+
+  .text-heading {
+    @apply text-2xl font-bold text-text-primary;
+  }
+
+  .text-body {
+    @apply text-base text-text-primary;
+  }
+
+  .text-caption {
+    @apply text-sm text-text-secondary;
+  }
+}
