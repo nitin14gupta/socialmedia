@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { View, Text, TextInput, TouchableOpacity, ActivityIndicator, KeyboardAvoidingView, Platform, ScrollView } from "react-native";
 import { router } from "expo-router";
 import { useAuth } from "../../context/auth-context";
@@ -22,7 +22,14 @@ export default function Register() {
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [errors, setErrors] = useState<{ [key: string]: string }>({});
-  const { register, isLoading } = useAuth();
+  const { register, isLoading, user } = useAuth();
+
+  // Redirect if already logged in
+  useEffect(() => {
+    if (user) {
+      router.replace("/(tabs)");
+    }
+  }, [user]);
 
   const validateForm = () => {
     try {
@@ -49,16 +56,14 @@ export default function Register() {
     try {
       await register(username, email, password);
     } catch (error: any) {
-      // Error handling is done in auth context with Toast
       console.error("Registration error:", error);
-      Toast.show({
-        type: "error",
-        text1: "Registration failed",
-        text2: error.message,
-      });
-      console.log(error);
     }
   };
+
+  // If already authenticated, don't render the register form
+  if (user) {
+    return null;
+  }
 
   return (
     <KeyboardAvoidingView
@@ -89,6 +94,7 @@ export default function Register() {
               }}
               autoCapitalize="none"
               autoComplete="username"
+              editable={!isLoading}
             />
             {errors.username && (
               <Text className="text-red-500 text-sm mt-1">{errors.username}</Text>
@@ -110,6 +116,7 @@ export default function Register() {
               keyboardType="email-address"
               autoCapitalize="none"
               autoComplete="email"
+              editable={!isLoading}
             />
             {errors.email && (
               <Text className="text-red-500 text-sm mt-1">{errors.email}</Text>
@@ -130,6 +137,7 @@ export default function Register() {
               }}
               secureTextEntry
               autoComplete="password-new"
+              editable={!isLoading}
             />
             {errors.password && (
               <Text className="text-red-500 text-sm mt-1">{errors.password}</Text>
@@ -150,6 +158,7 @@ export default function Register() {
               }}
               secureTextEntry
               autoComplete="password-new"
+              editable={!isLoading}
             />
             {errors.confirmPassword && (
               <Text className="text-red-500 text-sm mt-1">{errors.confirmPassword}</Text>
@@ -173,7 +182,10 @@ export default function Register() {
 
         <View className="flex-row justify-center mt-6">
           <Text className="text-gray-600">Already have an account? </Text>
-          <TouchableOpacity onPress={() => router.push("/(auth)/login")}>
+          <TouchableOpacity 
+            onPress={() => router.push("/(auth)/login")}
+            disabled={isLoading}
+          >
             <Text className="text-blue-500 font-bold">Log In</Text>
           </TouchableOpacity>
         </View>

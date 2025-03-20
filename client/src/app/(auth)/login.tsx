@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { View, Text, TextInput, TouchableOpacity, ActivityIndicator, KeyboardAvoidingView, Platform, ScrollView } from "react-native";
 import { router } from "expo-router";
 import { useAuth } from "../../context/auth-context";
@@ -15,7 +15,14 @@ export default function Login() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [errors, setErrors] = useState<{ [key: string]: string }>({});
-  const { login, isLoading } = useAuth();
+  const { login, isLoading, user } = useAuth();
+
+  // Redirect if already logged in
+  useEffect(() => {
+    if (user) {
+      router.replace("/(tabs)");
+    }
+  }, [user]);
 
   const validateForm = () => {
     try {
@@ -47,6 +54,11 @@ export default function Login() {
     }
   };
 
+  // If already authenticated, don't render the login form
+  if (user) {
+    return null;
+  }
+
   return (
     <KeyboardAvoidingView
       behavior={Platform.OS === "ios" ? "padding" : "height"}
@@ -77,6 +89,7 @@ export default function Login() {
               keyboardType="email-address"
               autoCapitalize="none"
               autoComplete="email"
+              editable={!isLoading}
             />
             {errors.email && (
               <Text className="text-red-500 text-sm mt-1">{errors.email}</Text>
@@ -97,6 +110,7 @@ export default function Login() {
               }}
               secureTextEntry
               autoComplete="password"
+              editable={!isLoading}
             />
             {errors.password && (
               <Text className="text-red-500 text-sm mt-1">{errors.password}</Text>
@@ -120,7 +134,10 @@ export default function Login() {
 
         <View className="flex-row justify-center mt-6">
           <Text className="text-gray-600">Don't have an account? </Text>
-          <TouchableOpacity onPress={() => router.push("/(auth)/register")}>
+          <TouchableOpacity 
+            onPress={() => router.push("/(auth)/register")}
+            disabled={isLoading}
+          >
             <Text className="text-blue-500 font-bold">Sign Up</Text>
           </TouchableOpacity>
         </View>

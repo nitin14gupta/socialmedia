@@ -8,8 +8,9 @@ interface IUser extends Document {
   password: string;
   avatar: string;
   bio?: string;
-  followers: number;
-  following: number;
+  followers: mongoose.Types.ObjectId[];
+  following: mongoose.Types.ObjectId[];
+  postsCount: number;
   comparePassword(candidatePassword: string): Promise<boolean>;
 }
 
@@ -44,13 +45,15 @@ const userSchema = new mongoose.Schema({
   followers: [{
     type: mongoose.Schema.Types.ObjectId,
     ref: 'User',
-    default: 0,
   }],
   following: [{
     type: mongoose.Schema.Types.ObjectId,
     ref: 'User',
-    default: 0,
   }],
+  postsCount: {
+    type: Number,
+    default: 0
+  }
 }, {
   timestamps: true,
 });
@@ -72,5 +75,11 @@ userSchema.pre('save', async function(next) {
 userSchema.methods.comparePassword = async function(candidatePassword: string): Promise<boolean> {
   return bcrypt.compare(candidatePassword, this.password);
 };
+
+// Add indexes for better query performance
+userSchema.index({ username: 1 });
+userSchema.index({ email: 1 });
+userSchema.index({ followers: 1 });
+userSchema.index({ following: 1 });
 
 export const User = mongoose.model<IUser>('User', userSchema); 
